@@ -62,11 +62,16 @@ data.forEach(d => {
   shops[d.shop].push({ x: d.date, y: d.price });
 });
 
+// Sort each shop's data by date
+Object.keys(shops).forEach(shop => {
+  shops[shop].sort((a, b) => new Date(a.x) - new Date(b.x));
+});
+
 // Create Chart.js datasets
 const datasets = Object.keys(shops).map(shop => ({
   label: shop,
   data: shops[shop],
-  borderColor: shopColors[shop] || "#888",       // fallback if missing
+  borderColor: shopColors[shop] || "#888",
   backgroundColor: (shopColors[shop] || "#888") + "55",
   tension: 0.3
 }));
