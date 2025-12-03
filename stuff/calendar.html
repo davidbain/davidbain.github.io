@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advent Calendar 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg,
+                    #8b0000 0%,
+                    #b22222 35%,
+                    #cc0000 65%,
+                    #ff3333 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .door {
+            aspect-ratio: 1;
+            position: relative;
+            cursor: pointer;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            border: 3px solid #fef3c7;
+            font-size: 3em;
+        }
+
+        .door:hover:not(.locked) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .door.opened {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        }
+
+        .door.locked {
+            cursor: not-allowed;
+            opacity: 0.6;
+            background: linear-gradient(135deg, #6b7280 0%, #374151 100%);
+        }
+
+        .day-number {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #fef3c7;
+            color: #7c2d12;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.4em;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #7c2d12;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: transform 0.2s;
+        }
+
+        .modal-close:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-day {
+            color: #7c2d12;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .modal-emoji {
+            font-size: 5em;
+            margin: 20px 0;
+        }
+
+        .modal-text {
+            color: #7c2d12;
+            font-size: 1.3em;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .calendar-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 10px;
+            }
+
+            .door {
+                font-size: 2em;
+            }
+
+            .modal-content {
+                padding: 30px;
+            }
+
+            .modal-emoji {
+                font-size: 4em;
+            }
+
+            .modal-text {
+                font-size: 1.1em;
+            }
+        }
+
+        /* customizable snowflake styling */
+        .snowflake {
+            color: #fff;
+            font-size: 1em;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 5px #000;
+        }
+
+        .snowflake,
+        .snowflake .inner {
+            animation-iteration-count: infinite;
+            animation-play-state: running
+        }
+
+        @keyframes snowflakes-fall {
+            0% {
+                transform: translateY(0)
+            }
+
+            100% {
+                transform: translateY(110vh)
+            }
+        }
+
+        @keyframes snowflakes-shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            50% {
+                transform: translateX(80px)
+            }
+        }
+
+        .snowflake {
+            position: fixed;
+            top: -10%;
+            z-index: 9999;
+            -webkit-user-select: none;
+            user-select: none;
+            cursor: default;
+            pointer-events: none;
+            animation-name: snowflakes-shake;
+            animation-duration: 3s;
+            animation-timing-function: ease-in-out
+        }
+
+        .snowflake .inner {
+            animation-duration: 10s;
+            animation-name: snowflakes-fall;
+            animation-timing-function: linear
+        }
+
+        .snowflake:nth-of-type(0) {
+            left: 1%;
+            animation-delay: 0s
+        }
+
+        .snowflake:nth-of-type(0) .inner {
+            animation-delay: 0s
+        }
+
+        .snowflake:first-of-type {
+            left: 10%;
+            animation-delay: 1s
+        }
+
+        .snowflake:first-of-type .inner,
+        .snowflake:nth-of-type(8) .inner {
+            animation-delay: 1s
+        }
+
+        .snowflake:nth-of-type(2) {
+            left: 20%;
+            animation-delay: .5s
+        }
+
+        .snowflake:nth-of-type(2) .inner,
+        .snowflake:nth-of-type(6) .inner {
+            animation-delay: 6s
+        }
+
+        .snowflake:nth-of-type(3) {
+            left: 30%;
+            animation-delay: 2s
+        }
+
+        .snowflake:nth-of-type(11) .inner,
+        .snowflake:nth-of-type(3) .inner {
+            animation-delay: 4s
+        }
+
+        .snowflake:nth-of-type(4) {
+            left: 40%;
+            animation-delay: 2s
+        }
+
+        .snowflake:nth-of-type(10) .inner,
+        .snowflake:nth-of-type(4) .inner {
+            animation-delay: 2s
+        }
+
+        .snowflake:nth-of-type(5) {
+            left: 50%;
+            animation-delay: 3s
+        }
+
+        .snowflake:nth-of-type(5) .inner {
+            animation-delay: 8s
+        }
+
+        .snowflake:nth-of-type(6) {
+            left: 60%;
+            animation-delay: 2s
+        }
+
+        .snowflake:nth-of-type(7) {
+            left: 70%;
+            animation-delay: 1s
+        }
+
+        .snowflake:nth-of-type(7) .inner {
+            animation-delay: 2.5s
+        }
+
+        .snowflake:nth-of-type(8) {
+            left: 80%;
+            animation-delay: 0s
+        }
+
+        .snowflake:nth-of-type(9) {
+            left: 90%;
+            animation-delay: 1.5s
+        }
+
+        .snowflake:nth-of-type(9) .inner {
+            animation-delay: 3s
+        }
+
+        .snowflake:nth-of-type(10) {
+            left: 25%;
+            animation-delay: 0s
+        }
+
+        .snowflake:nth-of-type(11) {
+            left: 65%;
+            animation-delay: 2.5s
+        }
+    </style>
+</head>
+
+<body>
+    <div class="snowflakes" aria-hidden="true">
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+        <div class="snowflake">
+            <div class="inner">❅</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>🎄 Advent Calendar 🎄</h1>
+        <div class="calendar-grid" id="calendar"></div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-day" id="modalDay"></div>
+            <div class="modal-emoji" id="modalEmoji"></div>
+            <div class="modal-text" id="modalText"></div>
+        </div>
+    </div>
+
+    <script>
+        // Define your gifts/prizes for each day
+        const gifts = [
+            { day: 1, emoji: "🦶🏻", text: "A foot massage" },
+            { day: 2, emoji: "🦮", text: "A Saturday morning dog walk" },
+            { day: 3, emoji: "🪙", text: "A new trolley coin" },
+            { day: 4, emoji: "🥪", text: "A Mark Bennett lunch" },
+            { day: 5, emoji: "🥰", text: "A cosy night in together" },
+            { day: 6, emoji: "🍕", text: "PizzaExpress" },
+            { day: 7, emoji: "🎄", text: "A trip to see Christmas lights" },
+            { day: 8, emoji: "", text: "" },
+            { day: 9, emoji: "🍽️", text: "Dinner cooked for you" },
+            { day: 10, emoji: "", text: "" },
+            { day: 11, emoji: "🥐", text: "Croissant for breakfast" },
+            { day: 12, emoji: "", text: "" },
+            { day: 13, emoji: "🎬", text: "Christmas movie night" },
+            { day: 14, emoji: "☕️", text: "A proper, veletised hot chocolate" },
+            { day: 15, emoji: "🍪", text: "Home made cookies" },
+            { day: 16, emoji: "🥞", text: "Breakfast out" },
+            { day: 17, emoji: "", text: "" },
+            { day: 18, emoji: "🌺", text: "A Studland and Swannage walk" },
+            { day: 19, emoji: "🚗", text: "Car clean in and out" },
+            { day: 20, emoji: "🍫", text: "Raffaello" },
+            { day: 21, emoji: "", text: "" },
+            { day: 22, emoji: "🦮", text: "A dog walk any day" },
+            { day: 23, emoji: "", text: "" },
+            { day: 24, emoji: "", text: "" }
+        ];
+
+        // Get current date (you can modify this for testing)
+        function getCurrentDay() {
+            const now = new Date();
+            const month = now.getMonth(); // 0-11 (December is 11)
+            const day = now.getDate();
+
+            // Only return day if it's December, otherwise return 0
+            if (month === 11) { // December
+                return day;
+            }
+            return 0;
+        }
+
+        // Check if a door can be opened
+        function canOpenDoor(doorDay) {
+            const currentDay = getCurrentDay();
+            return doorDay <= currentDay;
+        }
+
+        // Open modal with gift
+        function openModal(gift) {
+            const modal = document.getElementById('modal');
+            document.getElementById('modalDay').textContent = `Day ${gift.day}`;
+            document.getElementById('modalEmoji').textContent = gift.emoji;
+            document.getElementById('modalText').textContent = gift.text;
+            modal.classList.add('active');
+
+            // Save to localStorage
+            const opened = JSON.parse(localStorage.getItem('openedDoors') || '[]');
+            if (!opened.includes(gift.day)) {
+                opened.push(gift.day);
+                localStorage.setItem('openedDoors', JSON.stringify(opened));
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('active');
+            createCalendar(); // Refresh to show opened state
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Create the calendar
+        function createCalendar() {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+            const openedDoors = JSON.parse(localStorage.getItem('openedDoors') || '[]');
+
+            gifts.forEach(gift => {
+                const door = document.createElement('div');
+                door.className = 'door';
+
+                const isOpened = openedDoors.includes(gift.day);
+                const isLocked = !canOpenDoor(gift.day);
+
+                if (isOpened) {
+                    door.classList.add('opened');
+                }
+
+                if (isLocked) {
+                    door.classList.add('locked');
+                }
+
+                door.innerHTML = `
+                    ${gift.day}
+                `;
+
+                door.addEventListener('click', () => {
+                    if (!isLocked) {
+                        openModal(gift);
+                    }
+                });
+
+                calendar.appendChild(door);
+            });
+        }
+
+        // Initialize calendar when page loads
+        createCalendar();
+    </script>
+</body>
+
+</html>
