@@ -75,6 +75,11 @@
             background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
         }
 
+        .door.used {
+            background: linear-gradient(135deg, #4b5563 0%, #1f2937 100%);
+            opacity: 1;
+        }
+
         .door.locked {
             cursor: not-allowed;
             opacity: 0.6;
@@ -421,11 +426,10 @@
     </div>
 
     <script>
-        // Define your gifts/prizes for each day
         const gifts = [
             { day: 1, emoji: "🦶🏻", text: "A foot massage" },
             { day: 2, emoji: "🦮", text: "A Saturday morning dog walk" },
-            { day: 3, emoji: "🪙", text: "A new trolley coin" },
+            { day: 3, emoji: "🪙", text: "A new trolley coin", used: true},
             { day: 4, emoji: "🥪", text: "A Mark Bennett lunch" },
             { day: 5, emoji: "🥰", text: "A cosy night in together" },
             { day: 6, emoji: "🍕", text: "PizzaExpress" },
@@ -433,7 +437,7 @@
             { day: 8, emoji: "🚗", text: "Car clean in and out" },
             { day: 9, emoji: "🍽️", text: "Dinner cooked for you" },
             { day: 10, emoji: "🙌🏻", text: "Full massage" },
-            { day: 11, emoji: "🥐", text: "Croissant for breakfast" },
+            { day: 11, emoji: "🥐", text: "Croissant for breakfast", used: true},
             { day: 12, emoji: "", text: "" },
             { day: 13, emoji: "🎬", text: "Christmas movie night" },
             { day: 14, emoji: "☕️", text: "A proper, veletised hot chocolate" },
@@ -449,7 +453,7 @@
             { day: 24, emoji: "", text: "" }
         ];
 
-        // Get current date (you can modify this for testing)
+        // Get current date 
         function getCurrentDay() {
             const now = new Date();
             const month = now.getMonth(); // 0-11 (December is 11)
@@ -474,6 +478,7 @@
             document.getElementById('modalDay').textContent = `Day ${gift.day}`;
             document.getElementById('modalEmoji').textContent = gift.emoji;
             document.getElementById('modalText').textContent = gift.text;
+            
             modal.classList.add('active');
 
             // Save to localStorage
@@ -504,6 +509,17 @@
             const calendar = document.getElementById('calendar');
             calendar.innerHTML = '';
             const openedDoors = JSON.parse(localStorage.getItem('openedDoors') || '[]');
+            
+            // Load saved gifts data
+            const savedGifts = localStorage.getItem('giftsData');
+            if (savedGifts) {
+                const parsedGifts = JSON.parse(savedGifts);
+                parsedGifts.forEach((savedGift, index) => {
+                    if (gifts[index]) {
+                        gifts[index].used = savedGift.used;
+                    }
+                });
+            }
 
             gifts.forEach(gift => {
                 const door = document.createElement('div');
@@ -512,7 +528,9 @@
                 const isOpened = openedDoors.includes(gift.day);
                 const isLocked = !canOpenDoor(gift.day);
 
-                if (isOpened) {
+                if (gift.used) {
+                    door.classList.add('used');
+                } else if (isOpened) {
                     door.classList.add('opened');
                 }
 
